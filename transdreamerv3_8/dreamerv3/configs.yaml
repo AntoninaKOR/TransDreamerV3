@@ -10,6 +10,11 @@ defaults:
   eval_dir: ''
   filter: '.*'
 
+  # Comet ML logging
+  use_comet: False
+  comet_project: transdreamerv3
+  comet_workspace: null
+
   jax:
     platform: gpu
     jit: True
