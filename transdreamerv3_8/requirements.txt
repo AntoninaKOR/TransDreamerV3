@@ -1,4 +1,5 @@
 cloudpickle
+comet-ml
 crafter
 opencv-python==4.7.0.72
 gym==0.19.0
