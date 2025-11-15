@@ -17,7 +17,7 @@ else
 fi
 
 # Docker Hub image name (change YOUR_USERNAME to your Docker Hub username)
-DOCKER_IMAGE="YOUR_USERNAME/transdreamerv3:latest"
+DOCKER_IMAGE="antoninakar/transdreamerv3:latest"
 
 # Pull the image from Docker Hub (or build locally if not available)
 echo "Pulling Docker image from Docker Hub..."
@@ -45,13 +45,13 @@ echo "====================================================="
 echo ""
 
 # Run the container with GPU support
-docker run -it --rm \
-    --gpus '"device=3"' \
+docker run --runtime=nvidia -it --rm \
+    --gpus '"device=0"' \
     -v "${LOGDIR}:/logdir" \
     -e CUDA_VISIBLE_DEVICES=0 \
     -e COMET_API_KEY="${COMET_API_KEY}" \
     ${DOCKER_IMAGE} \
-    bash -c "python dreamerv3/train.py \
+    bash -c "python3 dreamerv3/train.py \
         --logdir /logdir/atari_boxing_$(date +%Y%m%d-%H%M%S) \
         --configs atari \
         --task atari_boxing \

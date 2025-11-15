@@ -1,5 +1,5 @@
 # Dockerfile for running TransDreamerV3 Atari experiments
-FROM nvidia/cuda:12.0.1-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:12.0.1-cudnn8-devel-ubuntu22.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=America/San_Francisco
@@ -14,11 +14,18 @@ RUN apt-get update && apt-get install -y \
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_ROOT_USER_ACTION=ignore
-RUN add-apt-repository ppa:deadsnakes/ppa
-RUN apt-get update && apt-get install -y python3.11-venv && apt-get clean
-RUN python3.11 -m venv /venv --upgrade-deps
-ENV PATH="/venv/bin:$PATH"
-RUN pip install -U pip setuptools
+RUN apt-get update && apt-get install -y python3.10 python3-pip
+
+
+RUN apt-get update
+RUN ln -sf /usr/bin/python3.10 /usr/bin/python3 \
+    && ln -sf /usr/bin/python3.10 /usr/bin/python
+
+
+RUN python3 --version
+
+RUN pip install " pip<24.1" "setuptools<58.0.0"
+
 
 # Environment variables for rendering and JAX
 ENV MUJOCO_GL=egl
@@ -47,6 +54,5 @@ WORKDIR /workspace/transdreamerv3_8
 
 # Create logdir
 RUN mkdir -p /logdir && chmod 777 /logdir
-
 # Default command
 CMD ["/bin/bash"]
