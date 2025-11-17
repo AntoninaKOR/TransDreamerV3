@@ -46,7 +46,7 @@ echo ""
 
 # Run the container with GPU support
 docker run --runtime=nvidia -it --rm \
-    --gpus '"device=0"' \
+    --gpus "device=0" \
     -v "${LOGDIR}:/logdir" \
     -e CUDA_VISIBLE_DEVICES=0 \
     -e COMET_API_KEY="${COMET_API_KEY}" \

@@ -8,7 +8,7 @@ ENV TZ=America/San_Francisco
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
   ffmpeg git vim curl software-properties-common grep \
-  libglew-dev x11-xserver-utils xvfb wget \
+  libglew-dev x11-xserver-utils xvfb wget cmake\
   && apt-get clean
 
 ENV PYTHONUNBUFFERED=1
@@ -33,20 +33,17 @@ ENV XLA_PYTHON_CLIENT_MEM_FRACTION=0.8
 ENV NUMBA_CACHE_DIR=/tmp
 
 # Install JAX with CUDA 11 support
-RUN pip install --upgrade "jax[cuda11]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+RUN pip install --upgrade "jax[cuda12]" 
 
 # Copy requirements and install Python dependencies
 COPY transdreamerv3_8/requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt
 
 # Install additional required packages
-RUN pip install numpy cloudpickle ruamel.yaml rich
-
-# Install Comet ML for experiment tracking
-RUN pip install comet-ml
+RUN pip install "numpy<2" cloudpickle ruamel.yaml rich
 
 # Install Atari ROMs
-RUN pip install ale_py==0.9.0 autorom[accept-rom-license]==0.6.1
+RUN pip install ale_py==0.9.0 autorom[accept-rom-license]==0.6.1 
 
 # Copy the entire project
 COPY . /workspace
