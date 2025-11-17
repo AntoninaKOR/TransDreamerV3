@@ -1,14 +1,32 @@
 import re
-
+import os
 import embodied
 import numpy as np
 
+from comet_ml import Experiment
 
 def train(agent, env, replay, logger, args):
+  
+  comet_api_key = os.environ.get('COMET_API_KEY')
 
   logdir = embodied.Path(args.logdir)
   logdir.mkdirs()
   print('Logdir', logdir)
+  
+   # Initialize Comet ML if enabled
+  comet_experiment = None
+  print(args.get("use_comet", False), args.get('comet_workspace', 'default'))
+  if args.get("use_comet", False):
+    comet_experiment = Experiment(
+        api_key=comet_api_key,
+        project_name=args.get('comet_project', 'transdreamerv3'),
+        workspace=args.get('comet_workspace', 'default'),
+        auto_metric_logging=False,
+    )
+    comet_experiment.set_name(logdir.name)
+    comet_experiment.log_parameters(dict(args))
+    print(f'Comet ML enabled: {comet_experiment.url}')
+  
   should_expl = embodied.when.Until(args.expl_until)
   should_train = embodied.when.Ratio(args.train_ratio / args.batch_steps)
   should_log = embodied.when.Clock(args.log_every)
@@ -31,12 +49,21 @@ def train(agent, env, replay, logger, args):
     length = len(ep['reward']) - 1
     score = float(ep['reward'].astype(np.float64).sum())
     sum_abs_reward = float(np.abs(ep['reward']).astype(np.float64).sum())
-    logger.add({
+    episode_metrics = {
         'length': length,
         'score': score,
         'sum_abs_reward': sum_abs_reward,
         'reward_rate': (np.abs(ep['reward']) >= 0.5).mean(),
-    }, prefix='episode')
+    }
+    logger.add(episode_metrics, prefix='episode')
+    
+    # Log to Comet ML
+    if comet_experiment:
+      comet_experiment.log_metrics(
+          {f'episode/{k}': v for k, v in episode_metrics.items()},
+          step=int(step)
+      )
+    
     print(f'Episode has {length} steps and return {score:.1f}.')
     stats = {}
     for key in args.log_keys_video:
@@ -89,6 +116,19 @@ def train(agent, env, replay, logger, args):
       logger.add(replay.stats, prefix='replay')
       logger.add(timer.stats(), prefix='timer')
       logger.write(fps=True)
+       
+      # Log to Comet ML
+      if comet_experiment:
+        comet_metrics = {}
+        for k, v in agg.items():
+          if isinstance(v, (int, float, np.number)):
+            comet_metrics[k] = float(v)
+        for k, v in report.items():
+          if isinstance(v, (int, float, np.number)):
+            comet_metrics[f'report/{k}'] = float(v)
+        if comet_metrics:
+          comet_experiment.log_metrics(comet_metrics, step=int(step))
+          
   driver.on_step(train_step)
 
   checkpoint = embodied.Checkpoint(logdir / 'checkpoint.ckpt')

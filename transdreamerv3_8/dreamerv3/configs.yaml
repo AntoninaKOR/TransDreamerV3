@@ -10,10 +10,6 @@ defaults:
   eval_dir: ''
   filter: '.*'
 
-  # Comet ML logging
-  use_comet: False
-  comet_project: transdreamerv3
-  comet_workspace: null
 
   jax:
     platform: gpu
@@ -50,6 +46,11 @@ defaults:
     # actor_addr: 'tcp://127.0.0.1:5551'
     actor_addr: 'ipc:///tmp/5551'
     actor_batch: 32
+
+    # Comet ML logging
+    use_comet: False
+    comet_project:  dreamerv3
+    comet_workspace: 'default'
 
   envs: {amount: 4, parallel: process, length: 0, reset: True, restart: True, discretize: 0, checks: False}
   wrapper: {length: 0, reset: True, discretize: 0, checks: False}
