@@ -53,7 +53,8 @@ docker run --runtime=nvidia -it --rm \
     ${DOCKER_IMAGE} \
     bash -c "python3 dreamerv3/train.py \
         --logdir /logdir/atari_boxing_$(date +%Y%m%d-%H%M%S) \
-        --configs atari \
+        --configs atari debug \
         --task atari_boxing \
-        --use_comet ${USE_COMET} \
-        --comet_project transdreamerv3-atari"
+        --run.use_comet ${USE_COMET} \
+        --run.comet_project dreamerv3-atari \
+        --run.comet_workspace dreamerv3"
